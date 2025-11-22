@@ -1,12 +1,16 @@
 <div align="center">
 
-# torchtitan
-
-#### Modal Integration
+# Modal Integration
 
 Clone the repository and run 
 
-`uv run modal run train_modal.py::train`
+```sh 
+uv run modal run train_modal.py::train
+```
+
+# torchtitan
+
+
 
 
 #### A PyTorch native platform for training generative AI models
