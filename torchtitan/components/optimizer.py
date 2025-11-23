@@ -21,6 +21,7 @@ from torch.optim import Optimizer
 from torchtitan.components.ft import FTManager, has_torchft
 from torchtitan.config import Optimizer as OptimizerConfig
 from torchtitan.distributed import ParallelDims
+from muon import MuonWithAuxAdam
 
 __all__ = [
     "OptimizersContainer",
@@ -126,6 +127,35 @@ class OptimizersContainer(Optimizer, Stateful, Generic[T]):
         # We need to call Optimizer.__init__() to initialize some necessary optimizer
         # functionality such as hooks.
         Optimizer.__init__(self, all_params, optimizer_kwargs)
+
+
+class MuonOptimizersContainer(OptimizersContainer):
+    def __init__(
+        self,
+        model_parts: list[nn.Module],
+        optimizer_cls: type[T],
+        optimizer_kwargs: dict[str, Any],
+    ) -> None:
+        all_params = []
+        self.optimizers = []
+        self.model_parts = model_parts
+        
+        for model in self.model_parts:
+            hidden_weights = [p for p in model.body.parameters() if p.ndim >= 2]
+            hidden_gains_biases = [p for p in model.body.parameters() if p.ndim < 2]
+            nonhidden_params = [*model.head.parameters(), *model.embed.parameters()]
+            param_groups = [
+                dict(params=hidden_weights, use_muon=True,
+                    lr=optimizer_kwargs["muon_lr"], weight_decay=optimizer_kwargs["muon_weight_decay"]),
+                dict(params=hidden_gains_biases+nonhidden_params, use_muon=False,
+                    lr=optimizer_kwargs["lr"], betas=(optimizer_kwargs["beta1"], optimizer_kwargs["beta2"]), weight_decay=optimizer_kwargs["weight_decay"]),
+            ]
+            optimizer = MuonWithAuxAdam(param_groups)
+            self.optimizers.append(optimizer)
+            all_params.extend(hidden_weights + hidden_gains_biases + nonhidden_params)
+        self._validate_length(len(self.model_parts))
+        self._post_init(all_params, optimizer_kwargs)
+
 
 
 class OptimizersInBackwardContainer(OptimizersContainer):
@@ -305,6 +335,7 @@ def build_optimizers(
     optimizer_classes = {
         "Adam": torch.optim.Adam,
         "AdamW": torch.optim.AdamW,
+        "Muon": MuonWithAuxAdam,
     }
     if name not in optimizer_classes:
         raise NotImplementedError(f"Optimizer {name} not added.")
@@ -323,6 +354,8 @@ def build_optimizers(
             ft_manager.manager,
             use_ft_optimizer=ft_manager.use_async_quorum,
         )
+    if name == "Muon":
+        return MuonOptimizersContainer(model_parts, optimizer_cls, optimizer_kwargs)
 
     return OptimizersContainer(model_parts, optimizer_cls, optimizer_kwargs)
 

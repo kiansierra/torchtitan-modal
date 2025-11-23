@@ -1268,6 +1268,11 @@ wheels = [
 ]
 
 [[package]]
+name = "muon-optimizer"
+version = "0.1.0"
+source = { git = "https://github.com/KellerJordan/Muon#857d1adc159e098212f828d927460782d3da59e9" }
+
+[[package]]
 name = "networkx"
 version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2563,6 +2568,7 @@ dependencies = [
     { name = "datasets" },
     { name = "fsspec" },
     { name = "modal" },
+    { name = "muon-optimizer" },
     { name = "tensorboard" },
     { name = "tokenizers" },
     { name = "tomli" },
@@ -2588,6 +2594,7 @@ requires-dist = [
     { name = "expecttest", marker = "extra == 'dev'" },
     { name = "fsspec" },
     { name = "modal", specifier = ">=1.2.4" },
+    { name = "muon-optimizer", git = "https://github.com/KellerJordan/Muon" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },

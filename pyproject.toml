@@ -24,6 +24,7 @@ dependencies = [
     "modal>=1.2.4",
     "wandb>=0.23.0",
     "colorama>=0.4.6",
+    "muon-optimizer @ git+https://github.com/KellerJordan/Muon",
 ]
 dynamic = ["version"]
 
