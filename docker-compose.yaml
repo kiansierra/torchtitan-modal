@@ -1,0 +1,48 @@
+services:
+  node-a:
+    # Build from Dockerfile in current directory
+    build: .
+    # image: nvidia/cuda:12.4.1-devel-ubuntu22.04
+    container_name: dev-node-a
+    # This is the key part: it exposes all available GPUs (all=0) to the container.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Set up a shared network for the two containers to communicate
+    networks:
+      - multi-node-net
+    # Optional: Keep the container running for development/debugging
+    command: nvidia-smi -l 5
+    # Increase shared memory for PyTorch/NCCL
+    shm_size: '16gb'
+
+  node-b:
+    # Build from Dockerfile in current directory
+    build: .
+    # image: nvidia/cuda:12.4.1-devel-ubuntu22.04
+    container_name: dev-node-b
+    # Expose all available GPUs (all=0) to this container as well
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Connect to the same network
+    networks:
+      - multi-node-net
+    # Optional: Keep the container running
+    command: nvidia-smi -l 5
+    # Increase shared memory for PyTorch/NCCL
+    shm_size: '16gb'
+
+    
+
+networks:
+  multi-node-net:
+    driver: bridge
