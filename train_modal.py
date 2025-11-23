@@ -38,11 +38,14 @@ def train():
     import os
     import torch
     print("Downloading tokenizer...")
-    subprocess.run(['python', 'scripts/download_hf_assets.py', '--repo_id', 'meta-llama/Llama-3.1-8B', '--assets', 'tokenizer'], check=True)
+    subprocess.run(['python', 'scripts/download_hf_assets.py', '--repo_id',
+    #  'meta-llama/Llama-3.1-8B',
+      'Qwen/Qwen3-0.6B',
+      '--assets', 'tokenizer'], check=True)
     print("Running training...")
     env = os.environ.copy()
     env.update({
-        "CONFIG_FILE": "./torchtitan/models/llama3/train_configs/llama3_8b.toml",
+        "CONFIG_FILE": "./torchtitan/models/qwen3/train_configs/qwen3_0.6b.toml",
         "NGPU": str(torch.cuda.device_count()),
     })
     subprocess.run(['./run_train.sh'], check=True, env=env)
