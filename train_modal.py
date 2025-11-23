@@ -10,7 +10,7 @@ app = modal.App("torchtitan-rl-training")
 
 image = (modal.Image.debian_slim()
     .apt_install("pciutils")
-    .uv_sync(gpu="A100:1")
+    .uv_sync(gpu="H100:1")
     # .uv_pip_install("torch", pre=True, index_url="https://download.pytorch.org/whl/nightly/cu129") # TODO: Attempt to install torch from nightly build
     .add_local_dir(".", "/root", 
         ignore=["*.pyc", "*.pyo", "*.pyd", "*.pyw", "*.pyz", ".venv/*", "docs/*",
@@ -18,6 +18,7 @@ image = (modal.Image.debian_slim()
          
 
 hf_cache_storage = modal.Volume.from_name("HF-CACHE", create_if_missing=True)
+checkpoints_storage = modal.Volume.from_name("TORCHTITAN-CHECKPOINTS", create_if_missing=True)
 
 @app.function(image=image, gpu="A100:2")
 def check():
@@ -26,11 +27,12 @@ def check():
     subprocess.run("ls")
 
 @app.function(image=image, 
-    gpu="A100-80GB:2", 
+    gpu="H100:8", 
     timeout=3600, 
-    secrets=[modal.Secret.from_name("huggingface-secret")], 
-    volumes={"/HF-CACHE": hf_cache_storage},
-    env={"HF_HOME": "/HF-CACHE"})
+    secrets=[modal.Secret.from_name("huggingface-secret"),
+            modal.Secret.from_name("wandb-secret", required_keys=['WANDB_API_KEY'])], 
+    volumes={"/HF-CACHE": hf_cache_storage, "/outputs": checkpoints_storage},
+    env={"HF_HOME": "/HF-CACHE", "WANDB_PROJECT": "torchtitan"})
 def train():
     import subprocess
     import os

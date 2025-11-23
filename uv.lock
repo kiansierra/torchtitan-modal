@@ -2559,6 +2559,7 @@ wheels = [
 name = "torchtitan"
 source = { editable = "." }
 dependencies = [
+    { name = "colorama" },
     { name = "datasets" },
     { name = "fsspec" },
     { name = "modal" },
@@ -2567,6 +2568,7 @@ dependencies = [
     { name = "tomli" },
     { name = "torchdata" },
     { name = "tyro" },
+    { name = "wandb" },
 ]
 
 [package.optional-dependencies]
@@ -2581,6 +2583,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "colorama", specifier = ">=0.4.6" },
     { name = "datasets", specifier = ">=2.21.0" },
     { name = "expecttest", marker = "extra == 'dev'" },
     { name = "fsspec" },
@@ -2594,6 +2597,7 @@ requires-dist = [
     { name = "tomli-w", marker = "extra == 'dev'" },
     { name = "torchdata", specifier = ">=0.8.0" },
     { name = "tyro" },
+    { name = "wandb", specifier = ">=0.23.0" },
     { name = "wandb", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]

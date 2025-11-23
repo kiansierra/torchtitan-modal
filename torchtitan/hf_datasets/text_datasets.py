@@ -26,6 +26,11 @@ def _load_c4_dataset(dataset_path: str, split: str):
     return load_dataset(dataset_path, name="en", split=split, streaming=True)
 
 
+def _load_fineweb_dataset(dataset_path: str, name: str, split: str):
+    """Load C4 dataset with default configuration."""
+    return load_dataset(dataset_path, name=name, split=split, streaming=True)
+
+
 def _process_c4_text(sample: dict[str, Any]) -> str:
     """Process C4 dataset sample text."""
     return sample["text"]
@@ -44,6 +49,21 @@ DATASETS = {
         sample_processor=_process_c4_text,
     ),
     "c4_validation": DatasetConfig(
+        path="allenai/c4",
+        loader=partial(_load_c4_dataset, split="validation"),
+        sample_processor=_process_c4_text,
+    ),
+    "fineweb10bt": DatasetConfig(
+        path="HuggingFaceFW/fineweb",
+        loader=partial(_load_fineweb_dataset, name="sample-10BT", split="train"),
+        sample_processor=_process_c4_text,
+    ),
+    "fineweb_test": DatasetConfig(
+        path="tests/assets/c4_test",
+        loader=lambda path: load_dataset(path, split="train"),
+        sample_processor=_process_c4_text,
+    ),
+    "fineweb_validation": DatasetConfig(
         path="allenai/c4",
         loader=partial(_load_c4_dataset, split="validation"),
         sample_processor=_process_c4_text,
