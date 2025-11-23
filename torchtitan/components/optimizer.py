@@ -21,7 +21,7 @@ from torch.optim import Optimizer
 from torchtitan.components.ft import FTManager, has_torchft
 from torchtitan.config import Optimizer as OptimizerConfig
 from torchtitan.distributed import ParallelDims
-from muon import MuonWithAuxAdam
+from muon import SingleDeviceMuonWithAuxAdam as MuonWithAuxAdam
 
 __all__ = [
     "OptimizersContainer",
@@ -141,14 +141,14 @@ class MuonOptimizersContainer(OptimizersContainer):
         self.model_parts = model_parts
         
         for model in self.model_parts:
-            hidden_weights = [p for p in model.body.parameters() if p.ndim >= 2]
-            hidden_gains_biases = [p for p in model.body.parameters() if p.ndim < 2]
-            nonhidden_params = [*model.head.parameters(), *model.embed.parameters()]
+            hidden_weights = [p for p in model.layers.parameters() if p.ndim >= 2]
+            hidden_gains_biases = [p for p in model.layers.parameters() if p.ndim < 2]
+            nonhidden_params = [*model.output.parameters(), *model.norm.parameters(), *model.tok_embeddings.parameters()]
             param_groups = [
                 dict(params=hidden_weights, use_muon=True,
                     lr=optimizer_kwargs["muon_lr"], weight_decay=optimizer_kwargs["muon_weight_decay"]),
                 dict(params=hidden_gains_biases+nonhidden_params, use_muon=False,
-                    lr=optimizer_kwargs["lr"], betas=(optimizer_kwargs["beta1"], optimizer_kwargs["beta2"]), weight_decay=optimizer_kwargs["weight_decay"]),
+                    lr=optimizer_kwargs["lr"], betas=optimizer_kwargs["betas"], weight_decay=optimizer_kwargs["weight_decay"]),
             ]
             optimizer = MuonWithAuxAdam(param_groups)
             self.optimizers.append(optimizer)
@@ -330,6 +330,8 @@ def build_optimizers(
         "weight_decay": weight_decay,
         "fused": fused,
         "foreach": foreach,
+        "muon_lr": optimizer_config.muon_lr,
+        "muon_weight_decay": optimizer_config.muon_weight_decay,
     }
 
     optimizer_classes = {

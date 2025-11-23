@@ -164,6 +164,10 @@ class Optimizer:
     is not compatible with gradients clipping, users should not call
     register_post_accumulate_grad_hook after the optimizer is built.
     """
+    muon_lr: float = 0.02
+    """Muon learning rate to use"""
+    muon_weight_decay: float = 0.01
+    """Muon weight decay to use"""
 
 
 @dataclass
