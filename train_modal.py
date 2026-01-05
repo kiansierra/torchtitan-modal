@@ -45,7 +45,7 @@ def train():
     print("Running training...")
     env = os.environ.copy()
     env.update({
-        "CONFIG_FILE": "./torchtitan/models/qwen3/train_configs/qwen3_0.6b.toml",
+        "CONFIG_FILE": "./configs/qwen3_0.6b.toml",
         "NGPU": str(torch.cuda.device_count()),
     })
     subprocess.run(['./run_train.sh'], check=True, env=env)

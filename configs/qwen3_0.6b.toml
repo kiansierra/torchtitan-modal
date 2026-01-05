@@ -1,0 +1,66 @@
+[job]
+dump_folder = "./outputs"
+description = "Qwen 3 0.6B training"
+
+[profiling]
+enable_profiling = false
+save_traces_folder = "profile_trace"
+profile_freq = 100
+
+[metrics]
+log_freq = 5
+enable_tensorboard = false
+save_tb_folder = "tb"
+enable_wandb = true
+
+[model]
+name = "qwen3"
+flavor = "0.6B"
+hf_assets_path = "./assets/hf/Qwen3-0.6B"
+# converters = ["float8"]
+
+[optimizer]
+name = "AdamW"
+lr = 8e-4
+eps = 1e-8
+muon_lr = 0.02
+muon_weight_decay = 0.01
+
+[lr_scheduler]
+warmup_steps = 200  # lr scheduler warm up, 20% total steps
+
+[training]
+local_batch_size = 2
+seq_len = 8192
+max_norm = 1.0  # grad norm clipping
+steps = 10000
+dataset = "c4"
+global_batch_size = 256
+
+[parallelism]
+data_parallel_replicate_degree = 1
+data_parallel_shard_degree = -1
+fsdp_reshard_after_forward = "default" # default / never / always
+tensor_parallel_degree = 1
+context_parallel_degree = 1
+
+[checkpoint]
+enable = false
+folder = "checkpoint/qwen3_0.6b"
+interval = 500
+last_save_model_only = false
+export_dtype = "float16"
+async_mode = "disabled" # ["disabled", "async", "async_with_pinned_mem"]
+
+[activation_checkpoint]
+mode = "selective"  # ["none", "selective", "full"]
+selective_ac_option = "op"  # "int" = ac every positive int layer or 'op', ac based on ops policy
+
+[compile]
+enable=false
+components = ["model", "loss"]
+
+[quantize.linear.float8]
+enable_fsdp_float8_all_gather = false
+precompute_float8_dynamic_scale_for_fsdp = false
+filter_fqns = ["output"]

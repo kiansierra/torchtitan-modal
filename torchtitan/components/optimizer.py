@@ -21,7 +21,7 @@ from torch.optim import Optimizer
 from torchtitan.components.ft import FTManager, has_torchft
 from torchtitan.config import Optimizer as OptimizerConfig
 from torchtitan.distributed import ParallelDims
-from muon import SingleDeviceMuonWithAuxAdam as MuonWithAuxAdam
+from torchtitan.components.muon import SingleDeviceMuonWithAuxAdam as MuonWithAuxAdam
 
 __all__ = [
     "OptimizersContainer",
@@ -330,9 +330,10 @@ def build_optimizers(
         "weight_decay": weight_decay,
         "fused": fused,
         "foreach": foreach,
-        "muon_lr": optimizer_config.muon_lr,
-        "muon_weight_decay": optimizer_config.muon_weight_decay,
     }
+    if name == "Muon":
+        optimizer_kwargs["muon_lr"] = optimizer_config.muon_lr
+        optimizer_kwargs["muon_weight_decay"] = optimizer_config.muon_weight_decay
 
     optimizer_classes = {
         "Adam": torch.optim.Adam,
